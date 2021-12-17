@@ -3,3 +3,7 @@
 .RData
 .Ruserdata
 pps-zimbbawe.Rproj
+.DS_Store
+inst/dashboard/.Renviron
+inst/dashboard/rsconnect/shinyapps.io/zimbabwe/ppsamr.dcf
+inst/dashboard/www/links_forms.md

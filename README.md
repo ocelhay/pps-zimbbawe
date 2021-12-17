@@ -1,2 +1,1 @@
-# pps-zimbbawe
- Point Prevalence Survey (PPS) for antiiotic use in Zimbabwe.
+Point Prevalence Survey (PPS) for antibiotic use in Zimbabwe.
