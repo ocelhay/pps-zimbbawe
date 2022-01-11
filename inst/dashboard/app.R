@@ -1,10 +1,26 @@
 library(markdown)
+library(ruODK)
 library(shiny)
 library(shinydashboard)
 library(shinydashboardPlus)
 library(shinyjs)
 
+cred_group <- c("Admin", "Country", "Gwanda Provincial Hospital",
+                "Harare Central Hospital", "Inyathi District Hospital",
+                "Kariba District Hospital", "Mpilo Central Hospital",
+                "Murewa District Hospital", "Mutare Provincial Hospital",
+                "Ndanga District Hospital", "Shamva District Hospital")
+
+vec_files_cred <- list.files(path = "./www/cred/")
+
+read_encrypted_cred <- function(rds, pwd) {
+  tmp <- readRDS(rds)
+  pwd_sha256 <- openssl::sha256(charToRaw(pwd))
+  unserialize(openssl::aes_cbc_decrypt(tmp, key = pwd_sha256))
+}
+
 ui <- dashboardPage(
+  skin = "blue",
   dashboardHeader(title = "PPS in Zimbabwe"),
   dashboardSidebar(minified = FALSE,
                    sidebarMenu(
@@ -20,18 +36,22 @@ ui <- dashboardPage(
     tabItems(
       tabItem("welcome",
               box(width = 8, title = "About Antimicrobial resistance", includeMarkdown("www/welcome.md")),
-              box(width = 4, title = "PPS Data",
-                  actionButton("show_data", "Explore Zimbabwe PPS Data"),
-                  br(), br(), br(), br(),
-                  hr(),
-                  p("Type password and click 'Access' to open data management section"),
-                  passwordInput("password", "Password:"),
-                  actionButton("show_data_management", "Access")
+              box(width = 4, title = "Connection",
+                  selectInput("cred_group", "Group:", choices = cred_group),
+                  textInput("cred_user", tagList(icon("user"), "User:")),
+                  passwordInput("cred_password", tagList(icon("key"), "Password:")),
+                  actionButton("cred_login", "Log In")
               )
       ),
       tabItem("data_management",
-              box(width = 12, title = "Forms",
+              box(width = 12, title = "Link to forms",
                   includeMarkdown("www/links_forms.md")
+              ),
+              box(width = 12, title = "Data tables",
+                  DT::DTOutput("ward_table"),
+                  DT::DTOutput("patient_table"),
+                  DT::DTOutput("antibio_table"),
+                  DT::DTOutput("microbio_table")
               )
       ),
       tabItem("data_overview",
@@ -47,7 +67,6 @@ ui <- dashboardPage(
 server <- function(input, output, session) { 
   output[["data_management"]] <- renderMenu({
     menuItem("Data Management", tabName = "data_management")
-    
   })
   
   output[["data_overview"]] <- renderMenu({
@@ -58,6 +77,17 @@ server <- function(input, output, session) {
     menuItem("Microbiology", tabName = "microbiology")
   })
   
+  # Source R files to generate outputs.
+  file_list <- list.files(path = "./www/R/outputs", pattern = "*.R", recursive = TRUE)
+  for (file in file_list) source(paste0("./www/R/outputs/", file), local = TRUE)$value
+  
+  # Definition of reactive elements.
+  cred_rval <- reactiveVal()
+  ward_data <- reactiveVal()
+  patient_data <- reactiveVal()
+  antibio_data <- reactiveVal()
+  microbio_data <- reactiveVal()
+  
   # Hide at start
   observe({
     hide(id = "data_management")
@@ -65,17 +95,42 @@ server <- function(input, output, session) {
     hide(id = "microbiology")
   })
   
-  observeEvent(input$show_data_management, {
+  observeEvent(input$cred_login, {
     Sys.sleep(0.2)
-    if(input$password == Sys.getenv("DM_TAB_PWD")) {
-      show(id = "data_management")
-      updateTabItems(session, inputId = "tabs", selected = "data_management")
+    file_cred <- glue("encrypted_cred_{input$cred_group}_{input$cred_user}.rds")
+    
+    # Test if credentials for this user name exist.
+    if (! file_cred %in% vec_files_cred) {
+      showNotification("Wrong connection credentials.", type = "error")
+      return()
     }
-  })
-  
-  observeEvent(input$show_data, {
+    
+    # Test if the password is correct.
+    cred <- try(read_encrypted_cred(glue("./www/cred/{file_cred}"), input$cred_password))
+    if (inherits(cred, "try-error")) {
+      showNotification("Wrong password.", type = "error")
+      return()
+    }
+    
+    # Download data, update credentials with values and open.
+    showNotification("Successfully logged in.")
+    
+    ru_setup(
+      url = cred$odk_url,
+      un = cred$odk_login,
+      pw = cred$odk_pwd
+    )
+    
+    ward_data(odata_submission_get(pid = 2, fid = "pps_ward"))
+    patient_data(odata_submission_get(pid = 2, fid = "pps_patient"))
+    antibio_data(odata_submission_get(pid = 2, fid = "pps_antibio"))
+    microbio_data(odata_submission_get(pid = 2, fid = "pps_microbiology"))
+    
+    if (cred$data_management)  show(id = "data_management")
     show(id = "data_overview")
     show(id = "microbiology")
+    
+    cred_rval(cred)
   })
 }
 

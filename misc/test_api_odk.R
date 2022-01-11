@@ -5,6 +5,7 @@ odk_password <- rstudioapi::askForPassword("Enter your password")
 ru_setup(
   url = "https://fieldcollection.net/",
   un = "olivier.celhay@gmail.com",
+  pid = 2,
   pw = odk_password
 )
 

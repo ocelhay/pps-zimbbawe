@@ -7,3 +7,4 @@ pps-zimbbawe.Rproj
 inst/dashboard/.Renviron
 inst/dashboard/rsconnect/shinyapps.io/zimbabwe/ppsamr.dcf
 inst/dashboard/www/links_forms.md
+misc/credentials_GITIGNORE.xlsx
