@@ -1,9 +1,11 @@
+library(glue)
 library(markdown)
 library(ruODK)
 library(shiny)
 library(shinydashboard)
 library(shinydashboardPlus)
 library(shinyjs)
+library(tidyverse)
 
 cred_group <- c("Admin", "Country", "Gwanda Provincial Hospital",
                 "Harare Central Hospital", "Inyathi District Hospital",
@@ -48,9 +50,14 @@ ui <- dashboardPage(
                   includeMarkdown("www/links_forms.md")
               ),
               box(width = 12, title = "Data tables",
+                  p("The following tables contains the raw data entered via the ODK form. (The data is downloaded at the opening of the app.)"),
+                  h3("Ward data table"),
                   DT::DTOutput("ward_table"),
+                  h3("Patient data table"),
                   DT::DTOutput("patient_table"),
+                  h3("Antibio data table"),
                   DT::DTOutput("antibio_table"),
+                  h3("Microbio data table"),
                   DT::DTOutput("microbio_table")
               )
       ),
