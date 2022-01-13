@@ -7,7 +7,7 @@ library(shinydashboardPlus)
 library(shinyjs)
 library(tidyverse)
 
-cred_group <- c("Admin", "Country", "Gwanda Provincial Hospital",
+cred_group <- c("Data Management", "Country", "Gwanda Provincial Hospital",
                 "Harare Central Hospital", "Inyathi District Hospital",
                 "Kariba District Hospital", "Mpilo Central Hospital",
                 "Murewa District Hospital", "Mutare Provincial Hospital",
