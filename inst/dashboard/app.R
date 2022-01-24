@@ -42,23 +42,39 @@ ui <- dashboardPage(
                   selectInput("cred_group", "Group:", choices = cred_group),
                   textInput("cred_user", tagList(icon("user"), "User:")),
                   passwordInput("cred_password", tagList(icon("key"), "Password:")),
-                  actionButton("cred_login", "Log In")
+                  actionButton("cred_login", "Log In"),
+                  p("The following tables contains the raw data entered via the ODK form. (The data is downloaded at the opening of the app.)")
               )
       ),
       tabItem("data_management",
-              box(width = 12, title = "Link to forms",
+              box(width = 4, title = "Link to Forms",
                   includeMarkdown("www/links_forms.md")
               ),
-              box(width = 12, title = "Data tables",
-                  p("The following tables contains the raw data entered via the ODK form. (The data is downloaded at the opening of the app.)"),
-                  h3("Ward data table"),
-                  DT::DTOutput("ward_table"),
-                  h3("Patient data table"),
-                  DT::DTOutput("patient_table"),
-                  h3("Antibio data table"),
-                  DT::DTOutput("antibio_table"),
-                  h3("Microbio data table"),
-                  DT::DTOutput("microbio_table")
+              box(width = 4, title = "Data Entry Indicators",
+                  p("Nb of wards forms: TODO"),
+                  p("Nb of patients forms: TODO"),
+                  p("Nb of antibio forms: TODO"),
+                  p("Nb of microbio forms: TODO")
+              ),
+              box(width = 4, title = "Quality Control",
+                  p("Ward forms without any associated patient: TODO"),
+                  p("Patients forms that aren't linked to a ward: TODO"),
+                  p("Antibio forms that can't be linked to a patient: TODO"),
+                  p("Microbio forms that can't be linked to a patient: TODO")
+              ),
+              tabBox(width = 12, title = "Data Tables",
+                     tabPanel("Ward data table",
+                              DT::DTOutput("ward_table")
+                     ),
+                     tabPanel("Patient data table",
+                              DT::DTOutput("patient_table")
+                     ),
+                     tabPanel("Antibio data table",
+                              DT::DTOutput("antibio_table")
+                     ),
+                     tabPanel("Microbio data table",
+                              DT::DTOutput("microbio_table")
+                     )
               )
       ),
       tabItem("data_overview",
