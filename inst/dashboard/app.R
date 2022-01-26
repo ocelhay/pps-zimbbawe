@@ -34,6 +34,9 @@ ui <- dashboardPage(
                    )
   ),
   dashboardBody(
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+    ),
     useShinyjs(),
     tabItems(
       tabItem("welcome",
@@ -47,35 +50,30 @@ ui <- dashboardPage(
               )
       ),
       tabItem("data_management",
-              box(width = 4, title = "Link to Forms",
-                  includeMarkdown("www/links_forms.md")
-              ),
-              box(width = 4, title = "Data Entry Indicators",
-                  p("Nb of wards forms: TODO"),
-                  p("Nb of patients forms: TODO"),
-                  p("Nb of antibio forms: TODO"),
-                  p("Nb of microbio forms: TODO")
-              ),
-              box(width = 4, title = "Quality Control",
-                  p("Ward forms without any associated patient: TODO"),
-                  p("Patients forms that aren't linked to a ward: TODO"),
-                  p("Antibio forms that can't be linked to a patient: TODO"),
-                  p("Microbio forms that can't be linked to a patient: TODO")
-              ),
-              tabBox(width = 12, title = "Data Tables",
-                     tabPanel("Ward data table",
-                              DT::DTOutput("ward_table")
-                     ),
-                     tabPanel("Patient data table",
-                              DT::DTOutput("patient_table")
-                     ),
-                     tabPanel("Antibio data table",
-                              DT::DTOutput("antibio_table")
-                     ),
-                     tabPanel("Microbio data table",
-                              DT::DTOutput("microbio_table")
-                     )
-              )
+                       box(width = 3, title = "Link to Forms",
+                           includeMarkdown("www/links_forms.md")
+                       ),
+                       box(width = 3, title = "Data Entry Indicators",
+                           DT::DTOutput("indicators_table")
+                       ),
+                       box(width = 6, status = "danger", solidHeader = TRUE, title = "Quality Control",
+                           strong("Issues requiring action:"),
+                           DT::DTOutput("qc_table")
+                       ),
+                tabBox(width = 12, title = "Data Tables",
+                       tabPanel("Ward data table",
+                                DT::DTOutput("ward_table")
+                       ),
+                       tabPanel("Patient data table",
+                                DT::DTOutput("patient_table")
+                       ),
+                       tabPanel("Antibio data table",
+                                DT::DTOutput("antibio_table")
+                       ),
+                       tabPanel("Microbio data table",
+                                DT::DTOutput("microbio_table")
+                       )
+                )
       ),
       tabItem("data_overview",
               p("Placeholder for data overview content!")
@@ -136,7 +134,7 @@ server <- function(input, output, session) {
     }
     
     # Download data, update credentials with values and open.
-    showNotification("Successfully logged in.")
+    showNotification("Successfully logged in. Downloading PPS Data...", type = "message")
     
     ru_setup(
       url = cred$odk_url,
