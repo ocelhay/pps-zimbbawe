@@ -3,15 +3,15 @@ output$indicators_table <- DT::renderDT({
   
   tab <- tribble(
     ~Indicator, ~Value,
-    "Number of ward forms", ward_data() |> nrow(),
-    "Number of patients forms", patient_data() |> nrow(),
-    "Number of antibio forms", antibio_data() |> nrow(),
-    "Number of microbio forms", microbio_data() |> nrow()
+    "Number of ward form records", ward_data() |> nrow(),
+    "Number of patient/indication form records", patient_data() |> nrow(),
+    "Number of antibio form records", antibio_data() |> nrow(),
+    "Number of microbio form records", microbio_data() |> nrow()
   )
   
   DT::datatable(tab,
                 rownames = FALSE,
-                filter = "top",
+                filter = "none",
                 style = "bootstrap",
                 options = list(scrollX = TRUE, scrollY = 300, paging = FALSE, dom = "lrtip"))
 })
