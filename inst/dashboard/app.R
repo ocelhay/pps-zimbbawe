@@ -45,8 +45,7 @@ ui <- dashboardPage(
                   selectInput("cred_group", "Group:", choices = cred_group),
                   textInput("cred_user", tagList(icon("user"), "User:")),
                   passwordInput("cred_password", tagList(icon("key"), "Password:")),
-                  actionButton("cred_login", "Log In"),
-                  p("The following tables contains the raw data entered via the ODK form. (The data is downloaded at the opening of the app.)")
+                  actionButton("cred_login", "Log In")
               )
       ),
       tabItem("data_management",
@@ -133,20 +132,34 @@ server <- function(input, output, session) {
       return()
     }
     
+    ru_setup(url = cred$odk_url, un = cred$odk_login, pw = cred$odk_pwd)
+    
     # Download data, update credentials with values and open.
     showNotification("Successfully logged in. Downloading PPS Data...", type = "message")
     
-    ru_setup(
-      url = cred$odk_url,
-      un = cred$odk_login,
-      pw = cred$odk_pwd
-    )
+    ward_data_odk     <- odata_submission_get(pid = 2, fid = "pps_ward")
+    patient_data_odk  <- odata_submission_get(pid = 2, fid = "pps_patient")
     
-    ward_data(odata_submission_get(pid = 2, fid = "pps_ward"))
-    patient_data(odata_submission_get(pid = 2, fid = "pps_patient"))
-    antibio_data(odata_submission_get(pid = 2, fid = "pps_antibio"))
-    microbio_data(odata_submission_get(pid = 2, fid = "pps_microbiology"))
+    antibio_data_odk  <- odata_submission_get(pid = 2, fid = "pps_antibio")
     
+    # additional issue with looping through tables
+    # https://docs.ropensci.org/ruODK/articles/odata-api.html#odata-service-document
+    # antibio_data_list  <- odata_service_get(pid = 2, fid = "pps_antibio")
+    # antibio_data_1 <- ruODK::odata_submission_get(table = antibio_data_list$name[1], local_dir = loc)
+    
+    
+    microbio_data_odk <- odata_submission_get(pid = 2, fid = "pps_microbiology")
+    
+    source("./www/R/tidy_odk_submissions.R", local = TRUE)
+    source("./www/R/remove_odk_submissions.R", local = TRUE)
+    source("./www/R/join_odk_submissions.R", local = TRUE)
+    
+    ward_data(ward_data_odk)
+    patient_data(patient_data_odk)
+    antibio_data(antibio_data_odk)
+    microbio_data(microbio_data_odk)
+    
+    # Tab management
     if (cred$data_management)  show(id = "data_management")
     show(id = "data_overview")
     show(id = "microbiology")

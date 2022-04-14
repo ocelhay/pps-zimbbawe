@@ -1,6 +1,6 @@
 output$qc_table <- DT::renderDT({
   req(ward_data())
-  
+
   # QC 1
   id_1 <- ward_data() |> 
     filter(! ward_code %in% patient_data()$ward_code) |> 
